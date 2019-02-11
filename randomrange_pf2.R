@@ -2,7 +2,7 @@
 #### and calculate the phylogenetic field (PSV) for each. Save all this on a table to compare with observed values.
 # PAM: presence-absence matrix, sites are rows and species are columns
 # spp.divfields: object with three columns derived with the function divfield_pams()
-# patch: file path to the folder where the individual species assemblages are stored (results from 'sp_assem' function)
+# path: file path to the folder where the individual species assemblages are stored (results from 'sp_assem' function)
 
 ## In this restricted version, considered the range size of spp as its probability of being chosen (larger range, more likely to be chosen)
 ### It's necessary to create a probability vector (according to range sizes) and "feed" that into the function. Important: the spp have to be in the same order as the columns in the global PAM

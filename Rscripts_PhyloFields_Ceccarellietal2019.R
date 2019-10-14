@@ -58,9 +58,49 @@ source ("compare_PFs.R")
 ####Points####
 #get the data (as a table, not as a shapefile)
 puntos.table <- read.dbf("Puntos_63spFINAL.dbf")
+puntos.tableAll <- read.dbf("Puntos_AllspFINAL.dbf")
+
 #create the PAM (presenceAbsence object)
 puntos.table.pam1 <- lets.presab.points(puntos.table[,1:2],puntos.table[,3],resol = 1)
 puntos.table.pam05 <- lets.presab.points(puntos.table[,1:2],puntos.table[,3],resol = 0.5)
+
+##############Richness correlation########################
+puntos.table.pam1 <- lets.presab.points(puntos.table[,1:2],puntos.table[,3],xmn = -130, 
+                                         xmx = -30, ymn = -60, ymx = 50, resol = 1, remove.cells = FALSE)
+puntos.table.pam1All <- lets.presab.points(puntos.tableAll[,1:2],puntos.tableAll[,3],xmn = -130, 
+                                            xmx = -30, ymn = -60, ymx = 50, resol = 1, remove.cells = FALSE)
+
+puntos.table.pam05 <- lets.presab.points(puntos.table[,1:2],puntos.table[,3],xmn = -130, 
+                                         xmx = -30, ymn = -60, ymx = 50, resol = 0.5, remove.cells = FALSE)
+puntos.table.pam05All <- lets.presab.points(puntos.tableAll[,1:2],puntos.tableAll[,3],xmn = -130, 
+                                         xmx = -30, ymn = -60, ymx = 50, resol = 0.5, remove.cells = FALSE)
+
+Richness66sp1 <- rowSums(puntos.table.pam1$Presence_and_Absence_Matrix[,3:66])
+RichnessAllsp1 <- rowSums(puntos.table.pam1All$Presence_and_Absence_Matrix[,3:137])
+yx1 <- puntos.table.pam1$P[,1:2]
+
+Richness66sp05 <- rowSums(puntos.table.pam05$Presence_and_Absence_Matrix[,3:66])
+RichnessAllsp05 <- rowSums(puntos.table.pam05All$Presence_and_Absence_Matrix[,3:137])
+yx05 <- puntos.table.pam05$P[,1:2]
+
+Richcordata1 <- cbind(yx1,Richness66sp1,RichnessAllsp1)
+Richcor1 <- cor(Richcordata1[,3], Richcordata1[,4])
+plot(Richcor1[,3], Richcor1[,4])
+plot(Richcor1[,3], Richcor1[,4], xlab= 'SR with phylogeny', ylab='SR All sp', pch=20, cex=2, col='red')
+
+
+Richcordata <- cbind(yx,Richness66sp,RichnessAllsp)
+Richcor <- cor(Richcordata[,3], Richcordata[,4])
+plot(Richcordata[,3], Richcordata[,4])
+plot(Richcordata[,3], Richcordata[,4], xlab= 'SR with phylogeny', ylab='SR All sp', pch=20, cex=2, col='red')
+text(8, 2, 'r=0.962458', cex=1, col='black')
+
+plot(puntos.table.pam05, xlim= c(-130, -30), ylim = c(-60, 50), main = "Species Richness")
+plot(puntos.table.pam05)
+plot(puntos.table.pam05All)
+writeRaster(poligonos.table.pos.pam025$Richness_Raster, 'sp_richness025', format= "GTiff", overwrite=TRUE)
+##############################################################
+
 #save only the presence-absence matrix
 puntos.pam.clean <- puntos.table.pam1$P[,-c(1,2)]
 puntos.pam.clean05 <- puntos.table.pam05$P[,-c(1,2)]
@@ -142,22 +182,53 @@ require(geiger)
 triato.tree <- read.tree("arbol_check")
 
 #read the data with species name (SCINAME),	Phylogenetic Fields,	climatic variables and	PSV information as separate columns
-triato.data.all <- read.table("PSVvsBio4_7_allsp.txt", header=TRUE, sep="")
-triato.data.sig05 <- read.table("PSVvsBio4_7_sigsp_05.txt", header=TRUE, sep="")
-triato.data.sig1 <- read.table("PSVvsBio4_7_sigsp_1.txt", header=TRUE, sep="")
+triato.data.all <- read.table("PSVvsBio4_7_AET_allsp.txt", header=TRUE, sep="")
+triato.data.sig05 <- read.table("PSVvsBio4_7_AET_sigsp_05.txt", header=TRUE, sep="")
+
+### standardized variables ###
+triato.data.all$Bio4mean_scaled <- scale(triato.data.all$Bio4mean)[, 1]
+triato.data.all$Bio7mean_scaled <- scale(triato.data.all$Bio7mean)[, 1]
+triato.data.all$AETmean_scaled <- scale(triato.data.all$AETmean)[, 1]
+triato.data.all$Bio4median_scaled <- scale(triato.data.all$Bio4median)[, 1]
+triato.data.all$Bio7median_scaled <- scale(triato.data.all$Bio7median)[, 1]
+triato.data.all$AETmedian_scaled <- scale(triato.data.all$AETmedian)[, 1]
+triato.data.all$Bio4max_scaled <- scale(triato.data.all$Bio4max)[, 1]
+triato.data.all$Bio7max_scaled <- scale(triato.data.all$Bio7max)[, 1]
+triato.data.all$AETmax_scaled <- scale(triato.data.all$AETmax)[, 1]
+triato.data.all$Bio4min_scaled <- scale(triato.data.all$Bio4min)[, 1]
+triato.data.all$Bio7min_scaled <- scale(triato.data.all$Bio7min)[, 1]
+triato.data.all$AETmin_scaled <- scale(triato.data.all$AETmin)[, 1]
+
+triato.data.sig05$Bio4mean_scaled <- scale(triato.data.sig05$Bio4mean)[, 1]
+triato.data.sig05$Bio7mean_scaled <- scale(triato.data.sig05$Bio7mean)[, 1]
+triato.data.sig05$AETmean_scaled <- scale(triato.data.sig05$AETmean)[, 1]
+triato.data.sig05$Bio4median_scaled <- scale(triato.data.sig05$Bio4median)[, 1]
+triato.data.sig05$Bio7median_scaled <- scale(triato.data.sig05$Bio7median)[, 1]
+triato.data.sig05$AETmedian_scaled <- scale(triato.data.sig05$AETmedian)[, 1]
+triato.data.sig05$Bio4max_scaled <- scale(triato.data.sig05$Bio4max)[, 1]
+triato.data.sig05$Bio7max_scaled <- scale(triato.data.sig05$Bio7max)[, 1]
+triato.data.sig05$AETmax_scaled <- scale(triato.data.sig05$AETmax)[, 1]
+triato.data.sig05$Bio4min_scaled <- scale(triato.data.sig05$Bio4min)[, 1]
+triato.data.sig05$Bio7min_scaled <- scale(triato.data.sig05$Bio7min)[, 1]
+triato.data.sig05$AETmin_scaled <- scale(triato.data.sig05$AETmin)[, 1]
 
 #Create a "comparative data" object (caper package)
 triatoall.compdata <- comparative.data(triato.tree,triato.data.all,SCINAME,vcv=T)
 triatosig05.compdata <- comparative.data(triato.tree,triato.data.sig05,SCINAME,vcv=T)
-triatosig1.compdata <- comparative.data(triato.tree,triato.data.sig1,SCINAME,vcv=T)
 
 #PGLS method
-triatoall1.pgls.Bio4 <- pgls(PSV1~Bio4mean,triatoall.compdata,lambda='ML')
-triatoall1.pgls.Bio7 <- pgls(PSV1~Bio7mean,triatoall.compdata,lambda='ML')
-triatoall05.pgls.Bio4 <- pgls(PSV05~Bio4mean,triatoall.compdata,lambda='ML')
-triatoall05.pgls.Bio7 <- pgls(PSV05~Bio7mean,triatoall.compdata,lambda='ML')
+#Mean#
+triatoall05.pgls.mean_scaled <- pgls(PSV05~Bio4mean_scaled+Bio7mean_scaled+AETmean_scaled,triatoall.compdata,lambda='ML')
+triatosig05.pgls.median_scaled <- pgls(PSV05~Bio4median_scaled+Bio7median_scaled+AETmedian_scaled,triatosig05.compdata,lambda='ML')
 
-triatosig1.pgls.Bio4 <- pgls(PSV1~Bio4mean,triatosig1.compdata,lambda='ML')
-triatosig1.pgls.Bio7 <- pgls(PSV1~Bio7mean,triatosig1.compdata,lambda='ML')
-triatosig05.pgls.Bio4 <- pgls(PSV05~Bio4mean,triatosig05.compdata,lambda='ML')
-triatosig05.pgls.Bio7 <- pgls(PSV05~Bio7mean,triatosig05.compdata,lambda='ML')
+#Median#
+triatoall05.pgls.median_scaled <- pgls(PSV05~Bio4median_scaled+Bio7median_scaled+AETmedian_scaled,triatoall.compdata,lambda='ML')
+triatosig05.pgls.median_scaled <- pgls(PSV05~Bio4median_scaled+Bio7median_scaled+AETmedian_scaled,triatosig05.compdata,lambda='ML')
+
+#Min#
+triatoall05.pgls.min_scaled <- pgls(PSV05~Bio4min_scaled+Bio7min_scaled+AETmin_scaled,triatoall.compdata,lambda='ML')
+triatosig05.pgls.min_scaled <- pgls(PSV05~Bio4min_scaled+Bio7min_scaled+AETmin_scaled,triatosig05.compdata,lambda='ML')
+
+#Max#
+triatoall05.pgls.max_scaled <- pgls(PSV05~Bio4max_scaled+Bio7max_scaled+AETmax_scaled,triatoall.compdata,lambda='ML')
+triatosig05.pgls.max_scaled <- pgls(PSV05~Bio4max_scaled+Bio7max_scaled+AETmax_scaled,triatosig05.compdata,lambda='ML')
